@@ -1,4 +1,7 @@
-package service;
+package analyzer;
+
+import service.GitHubAPIService;
+import service.GitHubLocalService;
 
 import java.io.IOException;
 import java.util.ArrayList;

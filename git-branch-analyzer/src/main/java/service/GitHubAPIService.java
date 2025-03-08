@@ -10,11 +10,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GitHubAPIService {
 
     private final HttpClient client;
-    private String accessToken;
+    private final String accessToken;
+    private static final Logger LOGGER = Logger.getLogger(GitHubAPIService.class.getName());
 
     public GitHubAPIService(String accessToken) {
         this.accessToken = accessToken;
@@ -32,22 +35,27 @@ public class GitHubAPIService {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                LOGGER.log(Level.SEVERE, "GitHub API request failed: {0}", response.body());
+                throw new IOException("GitHub API request failed with status code: " + response.statusCode());
+            }
 
-        if (response.statusCode() != 200) {
-            throw new IOException("GitHub API request failed with status code: " + response.statusCode());
+            JSONObject jsonResponse = new JSONObject(response.body());
+            JSONArray filesArray = jsonResponse.getJSONArray("files");
+            List<String> changedFiles = new ArrayList<>();
+
+            for (int i = 0; i < filesArray.length(); i++) {
+                JSONObject fileObject = filesArray.getJSONObject(i);
+                changedFiles.add(fileObject.getString("filename"));
+            }
+            return changedFiles;
+
+        } catch (IOException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Error fetching changed files from GitHub API", e);
+            return List.of();
         }
-
-        JSONObject jsonResponse = new JSONObject(response.body());
-        JSONArray filesArray = jsonResponse.getJSONArray("files");
-        List<String> changedFiles = new ArrayList<>();
-
-        for (int i = 0; i < filesArray.length(); i++) {
-            JSONObject fileObject = filesArray.getJSONObject(i);
-            changedFiles.add(fileObject.getString("filename"));
-        }
-
-        return changedFiles;
 
     }
 
