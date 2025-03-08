@@ -4,13 +4,14 @@ import service.GitHubLocalService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
-    public static void main(String[] args) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
 
-        final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    public static void main(String[] args) {
 
         String owner = "conamiflo";
         String repo = "chess-vision";
@@ -21,7 +22,7 @@ public class Main {
         String accessToken = System.getenv("GITHUB_ACCESS_TOKEN");
 
         if (accessToken == null || accessToken.isEmpty()) {
-            LOGGER.log(Level.SEVERE, "GitHub access token is not set.");
+            LOGGER.error("GitHub access token is not set.");
             return;
         }
 
@@ -32,10 +33,14 @@ public class Main {
         try {
             String mergeBase = gitHubLocalService.getMergeBase(branchA, branchB);
             List<String> commonChangedFiles = branchAnalyzer.findCommonFiles(owner, repo, branchA, branchB, mergeBase);
-            System.out.println("Common changed files: ");
-            commonChangedFiles.forEach(System.out::println);
+            if (commonChangedFiles.isEmpty()) {
+                LOGGER.info("No common changed files found between {} and {}", branchA, branchB);
+            } else {
+                LOGGER.info("Common changed files: ");
+                commonChangedFiles.forEach(LOGGER::info);
+            }
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error", e);
+            LOGGER.error("Unexpected error", e);
         }
 
     }

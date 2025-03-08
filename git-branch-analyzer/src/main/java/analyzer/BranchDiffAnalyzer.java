@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BranchDiffAnalyzer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDiffAnalyzer.class.getName());
     private final GitHubLocalService gitLocalService;
     private final GitHubAPIService gitAPIService;
 
@@ -29,8 +32,8 @@ public class BranchDiffAnalyzer {
             return new ArrayList<>(remoteChanges);
 
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error comparing changed files: " + e.getMessage());
-            return List.of();
+            LOGGER.error("Error comparing changed files", e);
+            throw e;
         }
     }
 }

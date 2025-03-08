@@ -10,14 +10,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitHubAPIService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubAPIService.class.getName());
     private final HttpClient client;
     private final String accessToken;
-    private static final Logger LOGGER = Logger.getLogger(GitHubAPIService.class.getName());
 
     public GitHubAPIService(String accessToken) {
         this.accessToken = accessToken;
@@ -38,7 +38,7 @@ public class GitHubAPIService {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                LOGGER.log(Level.SEVERE, "GitHub API request failed: {0}", response.body());
+                LOGGER.error("GitHub API request failed: {}", response.body());
                 throw new IOException("GitHub API request failed with status code: " + response.statusCode());
             }
 
@@ -53,8 +53,8 @@ public class GitHubAPIService {
             return changedFiles;
 
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching changed files from GitHub API", e);
-            return List.of();
+            LOGGER.error("Error fetching changed files from GitHub API", e);
+            throw e;
         }
 
     }

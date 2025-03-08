@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GitHubLocalService {
 
-    private static final Logger LOGGER = Logger.getLogger(GitHubLocalService.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubLocalService.class.getName());
     private final String localRepoPath;
 
     public GitHubLocalService(String localRepoPath) {
@@ -27,9 +27,9 @@ public class GitHubLocalService {
 
     public List<String> getChangedFiles(String branchB, String mergeBase) {
         try {
-            return executeGitCommand("git", "diff", "--name-only", mergeBase, branchB);
+            return executeGitCommand("git", "diff", "--diff-filter=AM", "--name-only", mergeBase, branchB);
         } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching changed files from local repository", e);
+            LOGGER.error("Error fetching changed files from local repository", e);
             return new ArrayList<>();
         }
     }
