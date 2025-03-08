@@ -9,20 +9,26 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         String owner = "conamiflo";
-        String repository = "chess-vision";
-        String branchA = "feature/stockfish-integration";
-        String branchB = "feature/stockfish-integration";
-        String localRepositoryPath = "C:\\Users\\Nemanja\\Desktop\\chess-bot";
+        String repo = "chess-vision";
+        String branchA = "feature/fastapi";
+        String branchB = "feature/fastapi-rest";
+        String localRepoPath = "C:\\Users\\Nemanja\\Desktop\\chess-bot";
 
-        GitHubAPIService gitHubAPIService = new GitHubAPIService("");
-        GitHubLocalService gitHubLocalService = new GitHubLocalService(localRepositoryPath);
+        String accessToken = System.getenv("GITHUB_ACCESS_TOKEN");
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new IllegalStateException("GitHub access token is not set.");
+        }
+
+        GitHubAPIService gitHubAPIService = new GitHubAPIService(accessToken);
+        GitHubLocalService gitHubLocalService = new GitHubLocalService(localRepoPath);
         BranchDiffAnalyzer branchAnalyzer = new BranchDiffAnalyzer(gitHubLocalService, gitHubAPIService);
 
         String mergeBase = gitHubLocalService.getMergeBase(branchA, branchB);
 
-        List<String> commonChangedFiles = branchAnalyzer.findCommonFiles(owner, repository, branchA, branchB, mergeBase);
+        List<String> commonChangedFiles = branchAnalyzer.findCommonFiles(owner, repo, branchA, branchB, mergeBase);
 
         System.out.println("Common changed files: ");
         commonChangedFiles.forEach(System.out::println);
+
     }
 }

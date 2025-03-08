@@ -8,16 +8,16 @@ import java.util.List;
 
 public class GitHubLocalService {
 
-    private final String repositoryPath;
+    private final String localRepoPath;
 
-    public GitHubLocalService(String localRepositoryPath) {
-        this.repositoryPath = localRepositoryPath;
+    public GitHubLocalService(String localRepoPath) {
+        this.localRepoPath = localRepoPath;
     }
 
     public String getMergeBase(String branchA, String branchB) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .command("git", "merge-base", branchA, branchB)
-                .directory(new java.io.File(repositoryPath));
+                .directory(new java.io.File(localRepoPath));
         Process process = processBuilder.start();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -33,7 +33,7 @@ public class GitHubLocalService {
 
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .command("git", "diff", "--name-only", mergeBase, branchB)
-                .directory(new java.io.File(repositoryPath));
+                .directory(new java.io.File(localRepoPath));
 
         Process process = processBuilder.start();
         List<String> changedFiles = new ArrayList<>();
