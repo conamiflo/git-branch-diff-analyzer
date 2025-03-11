@@ -1,12 +1,16 @@
-package service;
+package services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import exceptions.GitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class GitHubLocalService {
 
@@ -14,15 +18,27 @@ public class GitHubLocalService {
     private final String localRepoPath;
 
     public GitHubLocalService(String localRepoPath) {
+        if (localRepoPath == null || localRepoPath.isBlank()) {
+            throw new IllegalArgumentException("Local repository path must not be null or empty.");
+        }
+        Path gitDir = Path.of(localRepoPath, ".git");
+        if (!Files.isDirectory(gitDir)) {
+            throw new IllegalArgumentException("Invalid repository path: " + localRepoPath);
+        }
         this.localRepoPath = localRepoPath;
     }
 
     public String getMergeBase(String branchA, String branchB) throws IOException, InterruptedException {
-        List<String> output = executeGitCommand("git", "merge-base", branchA, branchB);
-        if (output.isEmpty()) {
-            throw new IOException("Failed to determine merge base.");
+        try {
+            List<String> output = executeGitCommand("git", "merge-base", branchA, branchB);
+            if (output.isEmpty()) {
+                throw new GitException("Failed to determine merge base.");
+            }
+            return output.getFirst();
+        } catch (GitException e) {
+            LOGGER.error("Error executing Git command to get merge base: {}", e.getMessage());
+            throw e;
         }
-        return output.getFirst();
     }
 
     public List<String> getChangedFiles(String branchB, String mergeBase) {
@@ -37,7 +53,8 @@ public class GitHubLocalService {
     private List<String> executeGitCommand(String... commands) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .command(commands)
-                .directory(new java.io.File(localRepoPath));
+                .directory(new java.io.File(localRepoPath))
+                .redirectErrorStream(true);
 
         Process process = processBuilder.start();
         List<String> output = new ArrayList<>();
@@ -50,7 +67,7 @@ public class GitHubLocalService {
         }
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new IOException("Git command failed: " + String.join(" ", commands));
+            throw new GitException("Git command failed: " + String.join(" ", commands));
         }
         return output;
     }
