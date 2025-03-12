@@ -3,72 +3,78 @@ package services;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.GitCommandException;
 import exceptions.GitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class GitHubLocalService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubLocalService.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubLocalService.class);
     private final String localRepoPath;
 
     public GitHubLocalService(String localRepoPath) {
         if (localRepoPath == null || localRepoPath.isBlank()) {
             throw new IllegalArgumentException("Local repository path must not be null or empty.");
         }
-        Path gitDir = Path.of(localRepoPath, ".git");
-        if (!Files.isDirectory(gitDir)) {
+        if (!Files.exists(Path.of(localRepoPath, ".git"))) {
             throw new IllegalArgumentException("Invalid repository path: " + localRepoPath);
         }
         this.localRepoPath = localRepoPath;
     }
 
-    public String getMergeBase(String branchA, String branchB) throws IOException, InterruptedException {
+    public boolean branchExists(String branch) {
         try {
-            List<String> output = executeGitCommand("git", "merge-base", branchA, branchB);
-            if (output.isEmpty()) {
-                throw new GitException("Failed to determine merge base.");
-            }
-            return output.getFirst();
+            executeGitCommand("git", "rev-parse", "--verify", branch);
+            return true;
         } catch (GitException e) {
-            LOGGER.error("Error executing Git command to get merge base: {}", e.getMessage());
-            throw e;
+            return false;
         }
     }
+
+    public String getMergeBase(String branchA, String branchB) {
+        validateBranchesExist(branchA, branchB);
+        List<String> output = executeGitCommand("git", "merge-base", branchA, branchB);
+        if (output.isEmpty()) {
+            throw new GitCommandException("Failed to determine merge base between branches: " + branchA + " and " + branchB);
+        }
+        return output.getFirst();
+    }
+
 
     public List<String> getChangedFiles(String branchB, String mergeBase) {
-        try {
-            return executeGitCommand("git", "diff", "--diff-filter=AM", "--name-only", mergeBase, branchB);
-        } catch (IOException | InterruptedException e) {
-            LOGGER.error("Error fetching changed files from local repository", e);
-            return new ArrayList<>();
+        return executeGitCommand("git", "diff", "--diff-filter=AM", "--name-only", mergeBase, branchB);
+    }
+
+    public void validateBranchesExist(String branchA, String branchB) {
+        if (!branchExists(branchA) || !branchExists(branchB)) {
+            throw new GitCommandException("One of the branches does not exist: " + branchA + ", " + branchB);
         }
     }
 
-    private List<String> executeGitCommand(String... commands) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder()
-                .command(commands)
-                .directory(new java.io.File(localRepoPath))
-                .redirectErrorStream(true);
-
-        Process process = processBuilder.start();
+    private List<String> executeGitCommand(String... commands) {
         List<String> output = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.add(line);
+        ProcessBuilder processBuilder = new ProcessBuilder(commands)
+                .directory(Path.of(localRepoPath).toFile())
+                .redirectErrorStream(true);
+        try {
+            Process process = processBuilder.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                reader.lines().forEach(output::add);
             }
+            if (process.waitFor() != 0) {
+                throw new GitCommandException("Git command failed: " + String.join(" ", commands) + "\nError output: " + output);
+            }
+            return output;
+
+        } catch (IOException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new GitCommandException("Git command execution failed", e);
         }
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new GitException("Git command failed: " + String.join(" ", commands));
-        }
-        return output;
     }
 }

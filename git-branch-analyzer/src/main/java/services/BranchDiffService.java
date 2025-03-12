@@ -25,27 +25,11 @@ public class BranchDiffService {
     }
 
     public List<String> getCommonChangedFiles(String owner, String repository, String branchA, String branchB) {
-        try {
-            if (owner == null || owner.isBlank() ||
-                repository == null || repository.isBlank() ||
-                branchA == null || branchA.isBlank() ||
-                branchB == null || branchB.isBlank()) {
-                throw new IllegalArgumentException("Owner, repository, and branch names must not be null or empty.");
-            }
 
-            String mergeBase = gitHubLocalService.getMergeBase(branchA, branchB);
-
-            List<String> remoteChanges = gitHubAPIService.getChangedFiles(owner, repository, branchA, mergeBase);
-            List<String> localChanges = gitHubLocalService.getChangedFiles(branchB, mergeBase);
-
-            return findCommonFiles(remoteChanges, localChanges);
-
-        } catch (IllegalArgumentException | GitException e) {
-            LOGGER.error(e.getMessage());
-        } catch (Exception e) {
-            LOGGER.error("Unexpected error: {}", e.getMessage(), e);
-        }
-        return List.of();
+        String mergeBase = gitHubLocalService.getMergeBase(branchA, branchB);
+        List<String> remoteChanges = gitHubAPIService.getChangedFiles(owner, repository, branchA, mergeBase);
+        List<String> localChanges = gitHubLocalService.getChangedFiles(branchB, mergeBase);
+        return findCommonFiles(remoteChanges, localChanges);
     }
 
     public List<String> findCommonFiles(List<String> remoteChanges, List<String> localChanges) {

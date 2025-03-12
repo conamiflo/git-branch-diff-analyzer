@@ -1,3 +1,5 @@
+import exceptions.GitAPIException;
+import exceptions.GitCommandException;
 import exceptions.GitException;
 import services.BranchDiffService;
 
@@ -21,6 +23,7 @@ public class Main {
         try {
             BranchDiffService branchDiffService = new BranchDiffService(accessToken, localRepoPath);
             List<String> commonChangedFiles = branchDiffService.getCommonChangedFiles(owner, repo, branchA, branchB);
+
             if (commonChangedFiles.isEmpty()) {
                 LOGGER.info("No common changed files found between {} and {}", branchA, branchB);
             } else {
@@ -29,11 +32,14 @@ public class Main {
             }
 
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Invalid input parameters: {}", e.getMessage());
+            LOGGER.error("Invalid input parameters: ", e);
+        } catch (GitAPIException e) {
+            LOGGER.error("GitHub API error: ", e);
+        } catch (GitCommandException e) {
+            LOGGER.error("Git command error: ", e);
         } catch (Exception e) {
-            LOGGER.error("Unexpected error occurred: {}", e.getMessage());
+            LOGGER.error("Unexpected error: ", e);
         }
-
     }
 
 }
