@@ -1,5 +1,4 @@
 package services;
-
 import exceptions.GitAPIException;
 import exceptions.GitException;
 import org.json.JSONArray;
@@ -21,12 +20,12 @@ public class GitHubAPIService {
     private final HttpClient client;
     private final String accessToken;
 
-    public GitHubAPIService(String accessToken) {
+    public GitHubAPIService(String accessToken, HttpClient client) {
         if (accessToken == null || accessToken.isBlank()) {
             throw new IllegalArgumentException("Access token must not be null or empty.");
         }
         this.accessToken = accessToken;
-        this.client = HttpClient.newHttpClient();
+        this.client = client;
     }
 
     public List<String> getChangedFiles(String owner, String repository, String branchA, String mergeBase) throws GitException {

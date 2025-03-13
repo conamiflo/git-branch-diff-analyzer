@@ -1,27 +1,16 @@
 package services;
 
-import exceptions.GitException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class BranchDiffService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDiffService.class);
     private final GitHubAPIService gitHubAPIService;
     private final GitHubLocalService gitHubLocalService;
 
-    public BranchDiffService(String accessToken, String localRepoPath) {
-        try {
-            this.gitHubAPIService = new GitHubAPIService(accessToken);
-            this.gitHubLocalService = new GitHubLocalService(localRepoPath);
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Error initializing BranchDiffService");
-            throw e;
-        }
+    public BranchDiffService(GitHubAPIService gitHubAPIService, GitHubLocalService gitHubLocalService) {
+        this.gitHubAPIService = gitHubAPIService;
+        this.gitHubLocalService = gitHubLocalService;
     }
 
     public List<String> getCommonChangedFiles(String owner, String repository, String branchA, String branchB) {

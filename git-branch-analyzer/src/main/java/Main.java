@@ -1,12 +1,14 @@
 import exceptions.GitAPIException;
 import exceptions.GitCommandException;
-import exceptions.GitException;
 import services.BranchDiffService;
 
+import java.net.http.HttpClient;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import services.GitHubAPIService;
+import services.GitHubLocalService;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
@@ -18,10 +20,14 @@ public class Main {
         String branchA = "feature/fastapi";
         String branchB = "feature/fastapi-rest";
         String localRepoPath = "C:\\Users\\Nemanja\\Desktop\\chess-bot";
-        String accessToken = System.getenv("GITHUB_ACCESS_TOKEN");
+        String accessToken = System.getenv("GITHUB_ACCESS_TOKENs");
 
         try {
-            BranchDiffService branchDiffService = new BranchDiffService(accessToken, localRepoPath);
+            GitHubAPIService gitHubAPIService = new GitHubAPIService(accessToken, HttpClient.newHttpClient());
+            GitHubLocalService gitHubLocalService = new GitHubLocalService(localRepoPath);
+            BranchDiffService branchDiffService = new BranchDiffService(gitHubAPIService, gitHubLocalService);
+
+
             List<String> commonChangedFiles = branchDiffService.getCommonChangedFiles(owner, repo, branchA, branchB);
 
             if (commonChangedFiles.isEmpty()) {

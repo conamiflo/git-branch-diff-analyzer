@@ -10,12 +10,9 @@ import java.util.List;
 
 import exceptions.GitCommandException;
 import exceptions.GitException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GitHubLocalService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GitHubLocalService.class);
     private final String localRepoPath;
 
     public GitHubLocalService(String localRepoPath) {
@@ -57,7 +54,7 @@ public class GitHubLocalService {
         }
     }
 
-    private List<String> executeGitCommand(String... commands) {
+    public List<String> executeGitCommand(String... commands) {
         List<String> output = new ArrayList<>();
         ProcessBuilder processBuilder = new ProcessBuilder(commands)
                 .directory(Path.of(localRepoPath).toFile())
