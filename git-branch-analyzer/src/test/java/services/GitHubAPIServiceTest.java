@@ -77,7 +77,7 @@ class GitHubAPIServiceTest {
 
         assertThatThrownBy(() -> gitHubAPIService.getChangedFiles(OWNER, REPO, BRANCH_A, MERGE_BASE))
                 .isInstanceOf(GitAPIException.class)
-                .hasMessageContaining("Repository not found or inaccessible");
+                .hasMessageContaining("GitHub API resource not found");
     }
 
     @Test

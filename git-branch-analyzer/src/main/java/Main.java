@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import services.GitHubAPIService;
 import services.GitHubLocalService;
+import services.interfaces.IGitHubAPIService;
+import services.interfaces.IGitHubLocalService;
 
 public class Main {
     public static final Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
@@ -28,8 +30,8 @@ public class Main {
         String accessToken = System.getenv("GITHUB_ACCESS_TOKEN");
 
         try {
-            GitHubAPIService gitHubAPIService = new GitHubAPIService(accessToken, HttpClient.newHttpClient());
-            GitHubLocalService gitHubLocalService = new GitHubLocalService(localRepoPath);
+            IGitHubAPIService gitHubAPIService = new GitHubAPIService(accessToken, HttpClient.newHttpClient());
+            IGitHubLocalService gitHubLocalService = new GitHubLocalService(localRepoPath);
             BranchDiffService branchDiffService = new BranchDiffService(gitHubAPIService, gitHubLocalService);
 
             List<String> commonChangedFiles = branchDiffService.getCommonChangedFiles(owner, repo, branchA, branchB);

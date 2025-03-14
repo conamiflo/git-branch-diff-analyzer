@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import services.interfaces.IGitHubAPIService;
+import services.interfaces.IGitHubLocalService;
 
 import java.util.List;
 
@@ -21,10 +23,10 @@ class BranchDiffServiceTest {
     private BranchDiffService branchDiffService;
 
     @Mock
-    private GitHubAPIService gitHubAPIService;
+    private IGitHubAPIService gitHubAPIService;
 
     @Mock
-    private GitHubLocalService gitHubLocalService;
+    private IGitHubLocalService gitHubLocalService;
 
     private final String OWNER = "conamiflo";
     private final String REPO = "chess-vision";

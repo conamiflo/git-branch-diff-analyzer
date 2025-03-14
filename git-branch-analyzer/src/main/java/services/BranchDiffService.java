@@ -11,7 +11,7 @@ public class BranchDiffService {
     private final IGitHubAPIService gitHubAPIService;
     private final IGitHubLocalService gitHubLocalService;
 
-    public BranchDiffService(GitHubAPIService gitHubAPIService, GitHubLocalService gitHubLocalService) {
+    public BranchDiffService(IGitHubAPIService gitHubAPIService, IGitHubLocalService gitHubLocalService) {
         this.gitHubAPIService = gitHubAPIService;
         this.gitHubLocalService = gitHubLocalService;
     }
