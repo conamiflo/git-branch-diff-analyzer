@@ -1,4 +1,4 @@
-# GitHub Branch Change Detector
+#  GitHub Branch Difference Analyzer
 
 This project provides a library that identifies files changed independently in two branches of a GitHub repository: one branch hosted remotely (`branchA`) and another created locally (`branchB`). The tool determines the common changed files without fetching `branchA` locally.
 
