@@ -1,5 +1,9 @@
 package services;
 
+import exceptions.GitCommandException;
+import exceptions.GitException;
+import services.interfaces.IGitHubLocalService;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,10 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import exceptions.GitCommandException;
-import exceptions.GitException;
-
-public class GitHubLocalService {
+public class GitHubLocalService implements IGitHubLocalService {
 
     private final String localRepoPath;
 
@@ -25,6 +26,7 @@ public class GitHubLocalService {
         this.localRepoPath = localRepoPath;
     }
 
+    @Override
     public boolean branchExists(String branch) {
         try {
             executeGitCommand("git", "rev-parse", "--verify", branch);
@@ -34,6 +36,7 @@ public class GitHubLocalService {
         }
     }
 
+    @Override
     public String getMergeBase(String branchA, String branchB) {
         validateBranchesExist(branchA, branchB);
         List<String> output = executeGitCommand("git", "merge-base", branchA, branchB);
@@ -43,7 +46,7 @@ public class GitHubLocalService {
         return output.getFirst();
     }
 
-
+    @Override
     public List<String> getChangedFiles(String branchB, String mergeBase) {
         return executeGitCommand("git", "diff", "--diff-filter=AM", "--name-only", mergeBase, branchB);
     }

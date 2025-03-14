@@ -1,12 +1,15 @@
 package services;
 
+import services.interfaces.IGitHubAPIService;
+import services.interfaces.IGitHubLocalService;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class BranchDiffService {
-    private final GitHubAPIService gitHubAPIService;
-    private final GitHubLocalService gitHubLocalService;
+    private final IGitHubAPIService gitHubAPIService;
+    private final IGitHubLocalService gitHubLocalService;
 
     public BranchDiffService(GitHubAPIService gitHubAPIService, GitHubLocalService gitHubLocalService) {
         this.gitHubAPIService = gitHubAPIService;

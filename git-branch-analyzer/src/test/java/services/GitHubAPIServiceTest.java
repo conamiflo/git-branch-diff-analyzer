@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import services.interfaces.IGitHubAPIService;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -31,7 +32,7 @@ class GitHubAPIServiceTest {
     @Mock
     private HttpResponse<String> mockResponse;
 
-    private GitHubAPIService gitHubAPIService;
+    private IGitHubAPIService gitHubAPIService;
 
     private static final String ACCESS_TOKEN = "test_token";
     private static final String OWNER = "test_owner";

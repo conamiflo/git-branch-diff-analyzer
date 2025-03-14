@@ -1,8 +1,12 @@
 package services;
+
 import exceptions.GitAPIException;
 import exceptions.GitException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import services.interfaces.IGitHubAPIService;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,10 +15,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class GitHubAPIService {
+public class GitHubAPIService implements IGitHubAPIService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHubAPIService.class);
     private final HttpClient client;
@@ -28,6 +30,7 @@ public class GitHubAPIService {
         this.client = client;
     }
 
+    @Override
     public List<String> getChangedFiles(String owner, String repository, String branchA, String mergeBase) throws GitException {
         String url = String.format("https://api.github.com/repos/%s/%s/compare/%s...%s", owner, repository, mergeBase, branchA);
         String responseBody = sendGitHubRequest(url);
@@ -46,11 +49,7 @@ public class GitHubAPIService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 404) {
-                LOGGER.error("GitHub API request failed: {}  {}", response.statusCode(), response.body());
-
-                if (url.matches("https://api.github.com/repos/[^/]+/[^/]+(/.*)?")) {
-                    throw new GitAPIException("Repository not found or inaccessible");
-                }
+                LOGGER.error("GitHub API request failed: {} {}", response.statusCode(), response.body());
                 throw new GitAPIException("GitHub API resource not found: " + url);
             }
 
@@ -81,5 +80,4 @@ public class GitHubAPIService {
         }
         return changedFiles;
     }
-
 }

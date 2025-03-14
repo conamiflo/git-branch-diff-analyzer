@@ -4,6 +4,7 @@ import exceptions.GitCommandException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import services.interfaces.IGitHubLocalService;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class GitHubLocalServiceTest {
 
-    private GitHubLocalService gitHubLocalService;
+    private IGitHubLocalService gitHubLocalService;
 
     @TempDir
     Path tempRepoPath;
@@ -74,7 +75,7 @@ class GitHubLocalServiceTest {
         executeGitCommand("git", "commit", "-m", "Modify file1.java");
         executeGitCommand("git", "checkout", "main");
 
-        String mergeBaseCommit = gitHubLocalService.executeGitCommand("git", "merge-base", "main", "feature/branch").getFirst();
+        String mergeBaseCommit = gitHubLocalService.getMergeBase("main", "feature/branch");
 
         List<String> changedFiles = gitHubLocalService.getChangedFiles("feature/branch", mergeBaseCommit);
         assertThat(changedFiles).isNotEmpty().containsExactlyInAnyOrder("file1.java");
@@ -85,36 +86,6 @@ class GitHubLocalServiceTest {
         assertThatThrownBy(() -> gitHubLocalService.getChangedFiles("non-existent-branch", "HEAD~1"))
                 .isInstanceOf(GitCommandException.class)
                 .hasMessageContaining("Git command failed");
-    }
-
-    @Test
-    void validateBranchesExist_WithValidBranches_ShouldNotThrowException() throws IOException, InterruptedException {
-        executeGitCommand("git", "checkout", "-b", "feature/branch");
-        executeGitCommand("git", "commit", "--allow-empty", "-m", "Add empty commit to feature/branch");
-
-        assertThatCode(() -> gitHubLocalService.validateBranchesExist("main", "feature/branch"))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void validateBranchesExist_WithNonExistingBranch_ShouldThrowGitCommandException() {
-        assertThatThrownBy(() -> gitHubLocalService.validateBranchesExist("main", "non-existent-branch"))
-                .isInstanceOf(GitCommandException.class)
-                .hasMessageContaining("One of the branches does not exist");
-    }
-
-    @Test
-    void executeGitCommand_WithInvalidCommand_ShouldThrowGitCommandException() {
-        assertThatThrownBy(() -> gitHubLocalService.executeGitCommand("git", "nonexistent-command"))
-                .isInstanceOf(GitCommandException.class)
-                .hasMessageContaining("Git command failed");
-    }
-
-    @Test
-    void executeGitCommand_WithValidCommand_ShouldReturnExpectedOutput() {
-        List<String> output = gitHubLocalService.executeGitCommand("git", "rev-parse", "HEAD");
-
-        assertThat(output).isNotNull().isNotEmpty();
     }
 
     private void executeGitCommand(String... command) throws IOException, InterruptedException {
