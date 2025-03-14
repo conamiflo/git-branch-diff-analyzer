@@ -11,22 +11,26 @@ import services.GitHubAPIService;
 import services.GitHubLocalService;
 
 public class Main {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
+    public static final Logger LOGGER = LoggerFactory.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
 
-        String owner = "conamiflo";
-        String repo = "chess-vision";
-        String branchA = "feature/fastapi";
-        String branchB = "feature/fastapi-rest";
-        String localRepoPath = "C:\\Users\\Nemanja\\Desktop\\chess-bot";
-        String accessToken = System.getenv("GITHUB_ACCESS_TOKENs");
+        if (args.length < 5) {
+            LOGGER.error("Usage: java -jar git-branch-analyzer-1.0-SNAPSHOT.jar <owner> <repo> <branchA> <branchB> <localRepoPath>");
+            return;
+        }
+
+        String owner = args[0];
+        String repo = args[1];
+        String branchA = args[2];
+        String branchB = args[3];
+        String localRepoPath = args[4];
+        String accessToken = System.getenv("GITHUB_ACCESS_TOKEN");
 
         try {
             GitHubAPIService gitHubAPIService = new GitHubAPIService(accessToken, HttpClient.newHttpClient());
             GitHubLocalService gitHubLocalService = new GitHubLocalService(localRepoPath);
             BranchDiffService branchDiffService = new BranchDiffService(gitHubAPIService, gitHubLocalService);
-
 
             List<String> commonChangedFiles = branchDiffService.getCommonChangedFiles(owner, repo, branchA, branchB);
 
